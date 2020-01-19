@@ -763,6 +763,8 @@ func (s *Session) authSecretReset(params []byte) error {
 // onLogin performs steps after successful authentication.
 func (s *Session) onLogin(msgID string, timestamp time.Time, rec *auth.Rec, missing []string) *ServerComMessage {
 
+	log.Printf("[Session] onLogin rec uid:%v, pub:%v", rec.Uid, rec.Public)
+
 	var reply *ServerComMessage
 	var params map[string]interface{}
 

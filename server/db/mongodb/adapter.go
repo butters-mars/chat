@@ -1688,6 +1688,9 @@ func (a *adapter) MessageGetAll(topic string, forUser t.Uid, opts *t.QueryOpt) (
 	findOpts := mdbopts.Find().SetSort(b.M{"topic": -1, "seqid": -1})
 	findOpts.SetLimit(int64(limit))
 
+	f, _ := json.Marshal(filter)
+	o, _ := json.Marshal(findOpts)
+	log.Printf("[mongo_adapter] MessageGetAll find messages, filter:%v, opts:%v", string(f), string(o))
 	cur, err := a.db.Collection("messages").Find(a.ctx, filter, findOpts)
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/tinode/chat/server/auth"
 	"github.com/tinode/chat/server/push"
 	"github.com/tinode/chat/server/store"
@@ -92,6 +93,17 @@ func replyCreateUser(s *Session, msg *ClientComMessage, rec *auth.Rec) {
 		}
 		if !isNullValue(msg.Acc.Desc.Private) {
 			private = msg.Acc.Desc.Private
+		}
+	}
+
+	if user.DeviceArray == nil || len(user.DeviceArray) == 0 {
+		user.DeviceArray = []*types.DeviceDef{
+			&types.DeviceDef{
+				DeviceId: uuid.New().String(),
+				Platform: "android",
+				Lang:     "en",
+				LastSeen: time.Now(),
+			},
 		}
 	}
 

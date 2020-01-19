@@ -10,6 +10,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"io"
 	"log"
@@ -31,6 +32,10 @@ func (sess *Session) closeGrpc() {
 		sess.grpcnode = nil
 		sess.lock.Unlock()
 	}
+}
+
+func (*grpcNodeServer) Ping(ctx context.Context, req *pbx.Unused) (*pbx.Unused, error) {
+	return &pbx.Unused{}, nil
 }
 
 // Equivalent of starting a new session and a read loop in one

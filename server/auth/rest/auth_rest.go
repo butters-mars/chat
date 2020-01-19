@@ -7,11 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/tinode/chat/server/auth"
 	"github.com/tinode/chat/server/store"
 	"github.com/tinode/chat/server/store/types"
@@ -166,11 +168,14 @@ func (a *authenticator) UpdateRecord(rec *auth.Rec, secret []byte) (*auth.Rec, e
 
 // Authenticate: get user record by provided secret
 func (a *authenticator) Authenticate(secret []byte) (*auth.Rec, []byte, error) {
+	log.Printf("[auth_rest] authenticate secret ...")
 	resp, err := a.callEndpoint("auth", nil, secret)
 	if err != nil {
+		log.Printf("[auth_rest] authenticate secret fail: %v", err)
 		return nil, nil, err
 	}
 
+	log.Printf("[auth_rest] authenticate secret OK, uid=%v", resp.Record.Uid)
 	// Check if server provided a user ID. If not, create a new account in the local database.
 	if resp.Record.Uid.IsZero() && a.allowNewAccounts {
 		if resp.NewAcc == nil {
@@ -178,10 +183,18 @@ func (a *authenticator) Authenticate(secret []byte) (*auth.Rec, []byte, error) {
 		}
 
 		// Create account, get UID, report UID back to the server.
-
+		log.Printf("[auth_rest] create new user")
 		user := types.User{
 			Public: resp.NewAcc.Public,
 			Tags:   resp.Record.Tags,
+			DeviceArray: []*types.DeviceDef{
+				&types.DeviceDef{
+					DeviceId: uuid.New().String(),
+					Platform: "android",
+					Lang:     "en",
+					LastSeen: time.Now(),
+				},
+			},
 		}
 		user.Access.Auth.UnmarshalText([]byte(resp.NewAcc.Auth))
 		user.Access.Anon.UnmarshalText([]byte(resp.NewAcc.Anon))
